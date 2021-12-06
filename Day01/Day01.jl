@@ -29,8 +29,12 @@ function Day01(filename)
 	lines = split(input_str, "\n", keepempty=false)
 	input = map(line->parse(Int, line), lines)
 
-	println("Part 1: $(Part1(input))")
-	println("Part 2: $(Part2(input))")
+	#slower because of more allocations
+	#input = [parse(Int, line) for line in eachline(filename)]
+
+	return Part1(input), Part2(input)
 end
 
-Day01("input.txt")
+r1, r2 = Day01("input.txt")
+println("Part 1: $r1")
+println("Part 2: $r2")
