@@ -6,8 +6,11 @@ struct Line <: FieldVector{4, Int}
 	Line(line::String) = new(parse.(Int, vcat(split.(split(line,"->"),',')...))...)
 end
 
-ishorizontal(l::Line) = l.x1 == l.x2
-isvertical(l::Line) = l.y1 == l.y2
+ishorizontal(l::Line) = l.y1 == l.y2
+isvertical(l::Line) = l.x1 == l.x2
+isdiagonal(l::Line) = !(isvertical(l) || ishorizontal(l))
+mkrange(x1,x2) = x1:(x1<x2 ? 1 : -1):x2
+count_overlaps(field) = count(x->x≥2, field)
 
 function Day05(filename)
 	lines = Vector{Line}()
@@ -22,18 +25,28 @@ function Day05(filename)
 	end
 
 	field = zeros(Int, ymax, xmax)
-	for line ∈ lines
-		if ishorizontal(line)
-			field[line.y1, line.x2:line.x1] .+= 1
-		elseif isvertical(line)
-			field[line.y2:line.y1, line.x1] .+= 1
+	for l ∈ lines
+		if ishorizontal(l)
+			field[l.y1, mkrange(l.x1,l.x2)] .+= 1
+		elseif isvertical(l)
+			field[mkrange(l.y1,l.y2), l.x1] .+= 1
 		end
 	end
-	r1 = count(x->x≥2, field)
+	r1 = count_overlaps(field)
 
-	return r1
+	for l ∈ lines
+		if isdiagonal(l)
+			for i ∈ zip(mkrange(l.y1,l.y2), mkrange(l.x1,l.x2))
+				field[i...] += 1
+			end
+		end
+	end
+	r2 = count_overlaps(field)
+
+	return r1,r2
 end
 
 cd(@__DIR__)
-r1 = Day05("input.txt")
+r1,r2 = Day05("input.txt")
 println("Part 1: $r1")
+println("Part 2: $r2")
